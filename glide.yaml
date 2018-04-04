@@ -1,0 +1,6 @@
+package: github.com/hankgao/toolbox
+import:
+- package: github.com/skycoin/skycoin
+  subpackages:
+  - src/cipher
+- package: github.com/tyler-smith/go-bip39
