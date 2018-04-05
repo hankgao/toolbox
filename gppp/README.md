@@ -3,9 +3,9 @@
 ## usage 
 If your Go environemnt is installed, run the following command: 
 
-`bash 
+```
 go run gppp.go 
-`
+```
 
 Otherwise downlaod binary for your OS platform at: 
 
