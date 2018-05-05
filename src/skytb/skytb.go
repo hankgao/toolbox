@@ -25,9 +25,9 @@ func GenerateSeed() string {
 }
 
 // GetFirstAddress returns the first address created from a seed
-func GetFirstAddress(seed string) string {
-	publicK, _ := cipher.GenerateDeterministicKeyPair([]byte(seed))
-	return cipher.AddressFromPubKey(publicK).String()
+func GetFirstAddress(seed string) (string, string) {
+	publicK, privateK := cipher.GenerateDeterministicKeyPair([]byte(seed))
+	return cipher.AddressFromPubKey(publicK).String(), privateK.Hex()
 
 }
 
