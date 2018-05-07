@@ -39,15 +39,16 @@ func main() {
 	seed := skytb.GenerateSeed()
 	GenesisAddressStr, theKey := skytb.GetFirstAddress(seed)
 	fmt.Printf("|%23s| %s\n", "GenesisAddressStr", GenesisAddressStr)
-	fmt.Printf("|%23s| %s\n", "", theKey)
-	fmt.Printf("|%23s| %s\n", "", seed)
+	fmt.Printf("|%23s| %s\n", "PrivateKey", theKey)
+	fmt.Printf("|%23s| %s\n", "Seed", seed)
 
 	fmt.Printf("|%23s| %s\n", "GenesisSignatureStr", "")
 
 	now := time.Now()
 	GenesisTimestamp := now.Unix()
+	now.Format(time.RFC822)
 	fmt.Printf("|%23s| %d\n", "GenesisTimestamp", GenesisTimestamp)
-	fmt.Printf("|%23s| %s\n", "", now.String())
+	fmt.Printf("|%23s| %s\n", "=>", now.String())
 
 	fmt.Printf("|%23s| %s\n", "GenesisCoinVolume", "300e12")
 	fmt.Printf("|%23s| %s\n", "PeerListURL", "")
@@ -72,7 +73,7 @@ func main() {
 	for i := 0; i < 100; i++ {
 		seed := skytb.GenerateSeed()
 		address, _ := skytb.GetFirstAddress(seed)
-		fmt.Printf("%03d %40s %s\n", i+1, address, seed)
+		fmt.Printf("- %03d %40s %s\n", i+1, address, seed)
 
 		addrs = append(addrs, address)
 	}
