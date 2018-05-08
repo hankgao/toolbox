@@ -10,7 +10,8 @@ import (
 	"github.com/skycoin/skycoin/src/visor"
 )
 
-const maximumSeq = 10000
+const maximumSeq = 3954
+const webInterfacePort = 7620
 
 func main() {
 	uxpool := getUxPool()
@@ -18,7 +19,7 @@ func main() {
 
 	i := 0
 	for addr, coins := range addressBook {
-		fmt.Printf("%03d %s=>%f\n", i, addr, coins)
+		fmt.Printf("%03d,%s,%f\n", i, addr, coins)
 		i++
 	}
 
@@ -64,7 +65,7 @@ func getUxPool() map[string]visor.ReadableTransactionOutput {
 
 func getBlock(which int) visor.ReadableBlock {
 
-	resp, err := http.Get(fmt.Sprintf("http://localhost:6420/block?seq=%d", which))
+	resp, err := http.Get(fmt.Sprintf("http://localhost:%d/block?seq=%d", webInterfacePort, which))
 	if err != nil {
 		panic(err)
 	}
