@@ -1,14 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strconv"
-	"strings"
 
 	"github.com/skycoin/skycoin/src/visor"
 )
@@ -72,37 +69,4 @@ func getBlock(which int) visor.ReadableBlock {
 
 	return block
 
-}
-
-func readBook(fn string) ([]addrItem, int) {
-	book := make([]addrItem, 2000)
-	f, err := os.Open(fn)
-	defer f.Close()
-
-	if err != nil {
-		panic(err)
-	}
-
-	reader := bufio.NewReader(f)
-
-	count := 0
-	for {
-		line, err := reader.ReadString('\n')
-		fmt.Printf("%s", line)
-		if err != nil {
-			break
-		}
-
-		a := strings.Split(line, ",")
-		balance, err := strconv.ParseFloat(a[2], 64)
-
-		book[count] = addrItem{
-			a[1],
-			balance,
-		}
-
-		count++
-	}
-
-	return book, count
 }

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 )
 
@@ -51,9 +53,79 @@ func getWalletBalance(wn string) (string, string) {
 	return coins, hours
 }
 
+func distributeCoins(wlt, change string, targets []addrItem, qty int) error {
+
+	jsonBody := `
+	{
+		"hours_selection": {
+			"type": "auto",
+			"mode": "share",
+			"share_factor": "0.5"
+		},
+		"wallet": {
+			"id": "walletName"
+		},
+		"change_address": "changeAddress",
+		"to": [
+		`
+
+	// "to": [
+	// 	{
+	// 		"address": "targetAddress",
+	// 		"coins": "targetCoins",
+	// 	}
+	// 	]
+
+	jsonBody = strings.Replace(jsonBody, "walletName", wlt, 1)
+	jsonBody = strings.Replace(jsonBody, "changeAddress", change, 1)
+
+	to := ""
+	for i := 0; i < qty; i++ {
+		to += fmt.Sprintf("{\n\"address\":%s\n", targets[i].addr)
+		to += fmt.Sprintf("\"address\":%d\n}", uint64(targets[i].balance*1e6))
+
+		if i < qty-1 {
+			to += ","
+		}
+
+		to += "\n"
+	}
+
+	to += "]\n}"
+
+	fmt.Println(jsonBody)
+
+	req, err := http.NewRequest("POST", urlWalletCreate, strings.NewReader(jsonBody))
+
+	if err != nil {
+		panic(err)
+	}
+
+	req.Header.Add("Content-Type", "application/application/json")
+	req.Header.Add("X-CSRF-Token", getCsrfToken())
+
+	c := &http.Client{}
+	resp, err := c.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%s\n", string(data))
+
+	return nil
+}
+
 func main() {
 
-	getWalletBalance("distribution002.wlt")
+	accounts, _ := readBook("suncoin.airdrop.csv")
+
+	fmt.Printf("%v\n", accounts)
 
 	// book, accounts := readBook("suncoin.airdrop.csv")
 
@@ -84,6 +156,39 @@ func main() {
 // 		i++
 // 	}
 // }
+
+func readBook(fn string) ([]addrItem, int) {
+	book := make([]addrItem, 2000)
+	f, err := os.Open(fn)
+	defer f.Close()
+
+	if err != nil {
+		panic(err)
+	}
+
+	reader := bufio.NewReader(f)
+
+	count := 0
+	for {
+		line, err := reader.ReadString('\n')
+		fmt.Printf("%s", line)
+		if err != nil {
+			break
+		}
+
+		a := strings.Split(line, ",")
+		balance, err := strconv.ParseFloat(a[2], 64)
+
+		book[count] = addrItem{
+			a[1],
+			balance,
+		}
+
+		count++
+	}
+
+	return book, count
+}
 
 func getCsrfToken() string {
 	csrf := CsrfValue{}
