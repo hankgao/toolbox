@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -22,6 +23,7 @@ const (
 	urlWalletCreate  = "http://127.0.0.1:8421/wallet/create"
 	urlCsrf          = "http://127.0.0.1:8421/csrf"
 	urlWalletBalance = "http://127.0.0.1:8421/wallet/balance"
+	urlSpend         = "http://127.0.0.1:8421/wallet/spend"
 )
 
 type addrItem struct {
@@ -53,55 +55,25 @@ func getWalletBalance(wn string) (string, string) {
 	return coins, hours
 }
 
-func distributeCoins(wlt, change string, targets []addrItem, qty int) error {
+func spendCoin(wn string, target addrItem) {
 
-	jsonBody := `
-	{
-		"hours_selection": {
-			"type": "auto",
-			"mode": "share",
-			"share_factor": "0.5"
-		},
-		"wallet": {
-			"id": "walletName"
-		},
-		"change_address": "changeAddress",
-		"to": [
-		`
+	coins := strconv.FormatUint(uint64(target.balance*1000000.0), 10)
 
-	// "to": [
-	// 	{
-	// 		"address": "targetAddress",
-	// 		"coins": "targetCoins",
-	// 	}
-	// 	]
+	v := url.Values{}
 
-	jsonBody = strings.Replace(jsonBody, "walletName", wlt, 1)
-	jsonBody = strings.Replace(jsonBody, "changeAddress", change, 1)
+	v.Set("id", wn)
+	v.Set("dst", target.addr)
+	v.Set("coins", coins)
 
-	to := ""
-	for i := 0; i < qty; i++ {
-		to += fmt.Sprintf("{\n\"address\":%s\n", targets[i].addr)
-		to += fmt.Sprintf("\"address\":%d\n}", uint64(targets[i].balance*1e6))
+	body := v.Encode()
 
-		if i < qty-1 {
-			to += ","
-		}
-
-		to += "\n"
-	}
-
-	to += "]\n}"
-
-	fmt.Println(jsonBody)
-
-	req, err := http.NewRequest("POST", urlWalletCreate, strings.NewReader(jsonBody))
+	req, err := http.NewRequest("POST", urlSpend, strings.NewReader(body))
 
 	if err != nil {
 		panic(err)
 	}
 
-	req.Header.Add("Content-Type", "application/application/json")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("X-CSRF-Token", getCsrfToken())
 
 	c := &http.Client{}
@@ -111,21 +83,107 @@ func distributeCoins(wlt, change string, targets []addrItem, qty int) error {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
+	if resp.Status != "200" {
 		panic(err)
 	}
 
-	fmt.Printf("%s\n", string(data))
+	// data, err := ioutil.ReadAll(resp.Body)
 
-	return nil
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// // parse result
+	// var f interface{}
+	// err = json.Unmarshal(data, &f)
+	// m := f.(map[string]interface{})
+
 }
+
+func distributeCoins(targets []addrItem) {
+	wltIndex := 0
+
+	for _, target := range targets {
+		spendCoin(fmt.Sprintf("distribution%03d", wltIndex), target)
+		wltIndex = (wltIndex + 1) % 100
+	}
+}
+
+// func distributeCoins(wlt, change string, targets []addrItem, qty int) error {
+
+// 	jsonBody := `
+// 	{
+// 		"hours_selection": {
+// 			"type": "auto",
+// 			"mode": "share",
+// 			"share_factor": "0.5"
+// 		},
+// 		"wallet": {
+// 			"id": "walletName"
+// 		},
+// 		"change_address": "changeAddress",
+// 		"to": [
+// 		`
+
+// 	// "to": [
+// 	// 	{
+// 	// 		"address": "targetAddress",
+// 	// 		"coins": "targetCoins",
+// 	// 	}
+// 	// 	]
+
+// 	jsonBody = strings.Replace(jsonBody, "walletName", wlt, 1)
+// 	jsonBody = strings.Replace(jsonBody, "changeAddress", change, 1)
+
+// 	to := ""
+// 	for i := 0; i < qty; i++ {
+// 		to += fmt.Sprintf("{\n\"address\":%s\n", targets[i].addr)
+// 		to += fmt.Sprintf("\"address\":%d\n}", uint64(targets[i].balance*1e6))
+
+// 		if i < qty-1 {
+// 			to += ","
+// 		}
+
+// 		to += "\n"
+// 	}
+
+// 	to += "]\n}"
+
+// 	fmt.Println(jsonBody)
+
+// 	req, err := http.NewRequest("POST", urlWalletCreate, strings.NewReader(jsonBody))
+
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	req.Header.Add("Content-Type", "application/application/json")
+// 	req.Header.Add("X-CSRF-Token", getCsrfToken())
+
+// 	c := &http.Client{}
+// 	resp, err := c.Do(req)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	defer resp.Body.Close()
+
+// 	data, err := ioutil.ReadAll(resp.Body)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	fmt.Printf("%s\n", string(data))
+
+// 	return nil
+// }
 
 func main() {
 
-	accounts, _ := readBook("suncoin.airdrop.csv")
+	readBook("suncoin.airdrop.csv")
 
-	fmt.Printf("%v\n", accounts)
+	// for i := 0; i < count; i++ {
+	// 	// fmt.Printf("%s, %f\n", accounts[i].addr, accounts[i].balance)
+	// }
 
 	// book, accounts := readBook("suncoin.airdrop.csv")
 
@@ -171,13 +229,18 @@ func readBook(fn string) ([]addrItem, int) {
 	count := 0
 	for {
 		line, err := reader.ReadString('\n')
-		fmt.Printf("%s", line)
 		if err != nil {
 			break
 		}
 
 		a := strings.Split(line, ",")
-		balance, err := strconv.ParseFloat(a[2], 64)
+		balance, err := strconv.ParseFloat(a[2][0:len(a[2])-2], 64)
+
+		fmt.Printf("%f\n", balance)
+
+		if err != nil {
+			panic(err)
+		}
 
 		book[count] = addrItem{
 			a[1],
@@ -185,6 +248,7 @@ func readBook(fn string) ([]addrItem, int) {
 		}
 
 		count++
+
 	}
 
 	return book, count
