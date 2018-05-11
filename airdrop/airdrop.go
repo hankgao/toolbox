@@ -67,7 +67,7 @@ func getWalletBalance(wn string) (uint64, uint64) {
 
 func spendCoin(wn string, target addrItem) {
 
-	coins := strconv.FormatUint(uint64(target.balance*1000000.0), 10)
+	coins := strconv.FormatUint(target.balance, 10)
 
 	v := url.Values{}
 
@@ -265,8 +265,6 @@ func readBook(fn string) ([]addrItem, int) {
 			a[1],
 			uint64(balance * 1000000.0),
 		}
-
-		fmt.Printf("%d\n", book[count].balance)
 
 		count++
 
