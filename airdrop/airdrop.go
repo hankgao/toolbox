@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // CsrfValue is something
@@ -28,10 +29,10 @@ const (
 
 type addrItem struct {
 	addr    string
-	balance float64
+	balance uint64 // in droplet
 }
 
-func getWalletBalance(wn string) (string, string) {
+func getWalletBalance(wn string) (uint64, uint64) {
 	resp, err := http.Get(fmt.Sprintf("%s?id=%s", urlWalletBalance, wn))
 	if err != nil {
 		panic(err)
@@ -45,12 +46,21 @@ func getWalletBalance(wn string) (string, string) {
 	c, _ := r.ReadString('\n')
 	h, _ := r.ReadString('\n')
 
-	coins := strings.Split(c, ":")[1]
-	coins = coins[0 : len(coins)-2]
-	hours := strings.Split(h, ":")[1]
-	hours = hours[1 : len(hours)-1]
+	cs := strings.Split(c, ":")[1]
+	hs := strings.Split(h, ":")[1]
 
-	fmt.Printf("%s#%s\n", coins, hours)
+	// rempve space, '\n', ','
+	cs = removeGarbage(cs)
+	hs = removeGarbage(hs)
+
+	coins, err := strconv.ParseUint(cs, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	hours, err := strconv.ParseUint(hs, 10, 64)
+	if err != nil {
+		panic(err)
+	}
 
 	return coins, hours
 }
@@ -83,9 +93,11 @@ func spendCoin(wn string, target addrItem) {
 	}
 	defer resp.Body.Close()
 
-	if resp.Status != "200" {
-		panic(err)
-	}
+	fmt.Printf("response status: %s\n", resp.Status)
+
+	// if resp.Status != "200" {
+	// 	panic(err)
+	// }
 
 	// data, err := ioutil.ReadAll(resp.Body)
 
@@ -100,12 +112,41 @@ func spendCoin(wn string, target addrItem) {
 
 }
 
-func distributeCoins(targets []addrItem) {
+func distributeCoins(targets []addrItem, count int) {
 	wltIndex := 0
+	for i, target := range targets {
+		if i >= count-1 {
+			break
+		}
 
-	for _, target := range targets {
-		spendCoin(fmt.Sprintf("distribution%03d", wltIndex), target)
-		wltIndex = (wltIndex + 1) % 100
+		spent := false
+		for wi := 0; wi < 100; wi++ {
+			wltName := fmt.Sprintf("distribution%03d.wlt", (wltIndex+wi)%100)
+
+			coins, _ := getWalletBalance(wltName)
+
+			if coins >= target.balance {
+				fmt.Printf("Distribute %d droplets to %s from %s\n", target.balance, target.addr, wltName)
+
+				spendCoin(wltName, target)
+
+				wltIndex = wltIndex + wi
+				spent = true
+
+				time.Sleep(1 * time.Second)
+
+				break
+
+			}
+
+			wi++
+		}
+
+		if !spent {
+			fmt.Printf("Warning: failed to airdrop %d droplets to address =>%s\n", target.balance, target.addr)
+		}
+
+		wltIndex++
 	}
 }
 
@@ -177,26 +218,6 @@ func distributeCoins(targets []addrItem) {
 // 	return nil
 // }
 
-func main() {
-
-	readBook("suncoin.airdrop.csv")
-
-	// for i := 0; i < count; i++ {
-	// 	// fmt.Printf("%s, %f\n", accounts[i].addr, accounts[i].balance)
-	// }
-
-	// book, accounts := readBook("suncoin.airdrop.csv")
-
-	// source pointer, destionation pointer
-	// sp, dp := 0, 0
-	// currentWallet := fmt.Sprintf("distribution%03d.wlt", sp)
-
-	// wb, err := getWalletBalance(currentWallet)
-
-	// check next distribution
-
-}
-
 // CreateDistributionWallets does someting
 // func CreateDistributionWallets() {
 // 	seeds := read100Seeds("suncoin2.100.seeds.csv")
@@ -234,9 +255,7 @@ func readBook(fn string) ([]addrItem, int) {
 		}
 
 		a := strings.Split(line, ",")
-		balance, err := strconv.ParseFloat(a[2][0:len(a[2])-2], 64)
-
-		fmt.Printf("%f\n", balance)
+		balance, err := strconv.ParseFloat(removeGarbage(a[2]), 64)
 
 		if err != nil {
 			panic(err)
@@ -244,8 +263,10 @@ func readBook(fn string) ([]addrItem, int) {
 
 		book[count] = addrItem{
 			a[1],
-			balance,
+			uint64(balance * 1000000.0),
 		}
+
+		fmt.Printf("%d\n", book[count].balance)
 
 		count++
 
@@ -278,9 +299,34 @@ func getNextTargets(wb float64, book []addrItem) []addrItem {
 
 func airDoroSun2(book []addrItem) error {
 
-	for _, item := range book {
-		fmt.Println(item)
+	for _, account := range book {
+		fmt.Println(account)
 	}
 
 	return nil
+}
+
+func removeGarbage(s string) string {
+	// rempve space, '\n', ','
+	return strings.Map(func(r rune) rune {
+		if r == 32 || r == '\n' || r == ',' || r == '\r' {
+			return -1
+		}
+		return r
+	}, s)
+}
+
+func main() {
+
+	accouts, count := readBook("suncoin.airdrop.csv")
+	distributeCoins(accouts, count)
+
+	// source pointer, destionation pointer
+	// sp, dp := 0, 0
+	// currentWallet := fmt.Sprintf("distribution%03d.wlt", sp)
+
+	// wb, err := getWalletBalance(currentWallet)
+
+	// check next distribution
+
 }
