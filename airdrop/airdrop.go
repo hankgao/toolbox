@@ -93,7 +93,9 @@ func spendCoin(wn string, target addrItem) {
 	}
 	defer resp.Body.Close()
 
-	fmt.Printf("response status: %s\n", resp.Status)
+	if resp.StatusCode != 200 {
+		panic(resp.Status)
+	}
 
 	// if resp.Status != "200" {
 	// 	panic(err)
@@ -133,7 +135,7 @@ func distributeCoins(targets []addrItem, count int) {
 				wltIndex = wltIndex + wi
 				spent = true
 
-				time.Sleep(1 * time.Second)
+				time.Sleep(2 * time.Second)
 
 				break
 
@@ -255,7 +257,16 @@ func readBook(fn string) ([]addrItem, int) {
 		}
 
 		a := strings.Split(line, ",")
-		balance, err := strconv.ParseFloat(removeGarbage(a[2]), 64)
+
+		bs := removeGarbage(a[2])
+
+		balancef, _ := strconv.ParseFloat(bs, 64)
+		balance := uint64(balancef * 1e6)
+
+		// last three digits have to be 000!
+		if balance%1000 > 0 {
+			balance = balance/1000*1000 + 1000
+		}
 
 		if err != nil {
 			panic(err)
@@ -263,8 +274,13 @@ func readBook(fn string) ([]addrItem, int) {
 
 		book[count] = addrItem{
 			a[1],
-			uint64(balance * 1000000.0),
+			balance,
 		}
+
+		// if strings.Contains(book[count].addr, "4K") {
+		// 	fmt.Printf("%s=>%d\n", book[count].addr, book[count].balance)
+
+		// }
 
 		count++
 
