@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"strings"
@@ -37,23 +38,54 @@ type CoinConfigT struct {
 }
 
 func main() {
-	c := newCoinConfig()
-	c.CoinName = "LiquorCoin"
-	c.CoinSymbol = "LQC"
+	fmt.Println("Creating ")
+	c := CoinConfigT{}
 
-	c.Nodes[0] = "127.324.234.234"
-	c.Nodes[1] = "234.324.234.23"
+	r := bufio.NewReader(os.Stdin)
 
-	c.Port = "8000"
-	c.WebInterfacePort = "8420"
-	c.RPCInterfacePort = "8430"
+	fmt.Print("Coin name: ")
+	c.CoinName, _ = r.ReadString('\n')
+	c.CoinName = strings.TrimSuffix(c.CoinName, "\n")
 
+	fmt.Print("Coin symbol: ")
+	c.CoinSymbol, _ = r.ReadString('\n')
+	c.CoinSymbol = strings.TrimSuffix(c.CoinSymbol, "\n")
+
+	fmt.Print("Genesis coin volume : ")
+	c.GenesisCoinVolume, _ = r.ReadString('\n')
+	c.GenesisCoinVolume = strings.TrimSuffix(c.GenesisCoinVolume, "\n")
+
+	fmt.Print("Port: ")
+	c.Port, _ = r.ReadString('\n')
+	c.Port = strings.TrimSuffix(c.Port, "\n")
+
+	fmt.Print("Web interface port: ")
+	c.WebInterfacePort, _ = r.ReadString('\n')
+	c.WebInterfacePort = strings.TrimSuffix(c.WebInterfacePort, "\n")
+
+	fmt.Print("RPC interface port: ")
+	c.RPCInterfacePort, _ = r.ReadString('\n')
+	c.RPCInterfacePort = strings.TrimSuffix(c.RPCInterfacePort, "\n")
+
+	fmt.Print("Node 1 IP: ")
+	c.Nodes[0], _ = r.ReadString('\n')
+	c.Nodes[0] = strings.TrimSuffix(c.Nodes[0], "\n")
+
+	fmt.Print("Node 2 IP: ")
+	c.Nodes[1], _ = r.ReadString('\n')
+	c.Nodes[1] = strings.TrimSuffix(c.Nodes[1], "\n")
+
+	fmt.Println("Generating configurations ...")
+	fillupCoinConfig(&c)
+
+	fmt.Println("Creating configuration.md ...")
 	configurationFile("configuration.md", c)
+
+	fmt.Println("Creating skycoin.go.sed")
 	skycoinSed("skycoin.go.sed", c)
 }
 
-func newCoinConfig() CoinConfigT {
-	c := CoinConfigT{}
+func fillupCoinConfig(c *CoinConfigT) {
 
 	publicK, privateK := cipher.GenerateKeyPair()
 
@@ -69,16 +101,8 @@ func newCoinConfig() CoinConfigT {
 	now.Format(time.RFC822)
 	c.GenesisTimestampReadable = now.String()
 
-	c.GenesisCoinVolume = "300e12"
 	c.PeerListURL = ""
-	c.Port = ""
-	c.WebInterfacePort = ""
-	c.RPCInterfacePort = ""
 	c.GenesisUxID = ""
-	c.Nodes[0] = ""
-	c.Nodes[1] = ""
-	c.Nodes[2] = ""
-	c.Nodes[3] = ""
 
 	// List 100 addresseed used for initial distribution
 	// TODO: write to a csv file
@@ -91,7 +115,6 @@ func newCoinConfig() CoinConfigT {
 		addrs = append(addrs, address)
 	}
 
-	return c
 }
 
 func injectValues(text string, c CoinConfigT) string {
@@ -116,9 +139,12 @@ func injectValues(text string, c CoinConfigT) string {
 
 	for i := 0; i < 2; i++ {
 		text = strings.Replace(text, fmt.Sprintf("$node%03d", i+1), c.Nodes[i], -1)
-		text = strings.Replace(text, fmt.Sprintf("$node%03d:port", i+1),
-			fmt.Sprintf("%s:%s", c.Nodes[i], c.WebInterfacePort), -1)
+		oldText := fmt.Sprintf("$nodewithport%03d", i+1)
+		newText := fmt.Sprintf("%s:%s", c.Nodes[i], c.WebInterfacePort)
+		text = strings.Replace(text, oldText, newText, -1)
 	}
+
+	fmt.Println(text)
 
 	return text
 
