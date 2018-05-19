@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -38,7 +39,6 @@ type CoinConfigT struct {
 }
 
 func main() {
-	fmt.Println("Creating ")
 	c := CoinConfigT{}
 
 	r := bufio.NewReader(os.Stdin)
@@ -75,14 +75,27 @@ func main() {
 	c.Nodes[1], _ = r.ReadString('\n')
 	c.Nodes[1] = strings.TrimSuffix(c.Nodes[1], "\n")
 
+	fmt.Print("Output folder: ")
+	outputFolder, _ := r.ReadString('\n')
+	outputFolder = strings.TrimSuffix(outputFolder, "\n")
+
+	outputFolder = filepath.Join(outputFolder, c.CoinName)
+	err := os.MkdirAll(outputFolder, 0755)
+	if err != nil {
+		panic(err)
+	}
+
 	fmt.Println("Generating configurations ...")
 	fillupCoinConfig(&c)
 
 	fmt.Println("Creating configuration.md ...")
-	configurationFile("configuration.md", c)
+	configurationFile(filepath.Join(outputFolder, "configuration.md"), c)
 
 	fmt.Println("Creating skycoin.go.sed")
-	skycoinSed("skycoin.go.sed", c)
+	skycoinSed(filepath.Join(outputFolder, "skycoin.go.sed"), c)
+
+	fmt.Println("Creating electron.main.js.sed")
+	eletronMainJs(filepath.Join(outputFolder, "electron.main.js.sed"), c)
 }
 
 func fillupCoinConfig(c *CoinConfigT) {
@@ -129,7 +142,7 @@ func injectValues(text string, c CoinConfigT) string {
 	text = strings.Replace(text, "$gasSeed", c.gasSeed, -1)
 	text = strings.Replace(text, "$GenesisSignatureStr", c.GenesisSignatureStr, -1)
 	text = strings.Replace(text, "$GenesisTimestamp", fmt.Sprintf("%d", c.GenesisTimestamp), -1)
-	text = strings.Replace(text, "$GenesisTimestampReadable", c.GenesisTimestampReadable, -1)
+	text = strings.Replace(text, "$TimestampReadable", c.GenesisTimestampReadable, -1)
 	text = strings.Replace(text, "$GenesisCoinVolume", c.GenesisCoinVolume, -1)
 	text = strings.Replace(text, "$PeerListURL", c.PeerListURL, -1)
 	text = strings.Replace(text, "$Port", c.Port, -1)
@@ -143,8 +156,6 @@ func injectValues(text string, c CoinConfigT) string {
 		newText := fmt.Sprintf("%s:%s", c.Nodes[i], c.WebInterfacePort)
 		text = strings.Replace(text, oldText, newText, -1)
 	}
-
-	fmt.Println(text)
 
 	return text
 

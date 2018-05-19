@@ -8,19 +8,27 @@ const electronMainSed = `
 s/6420/$WebInterfacePort/
 
 # change executable name
-s/esources\/app\/skycoin/esources\/app\/$coinname/
+s#esources/app/skycoin#esources/app/$coinname#
 
 # change log messages
-s/Starting skycoin/Starting $Coinname/
+s/Starting skycoin/Starting $coinname/
 s/Skycoin already running/$Coinname already running/
-s/Failed to start skycoin/Failed to start $Coinname/
-s/Cleared the caching of the skycoin wallet/Cleared the caching of the $Coinname wallet/
+s/Failed to start skycoin/Failed to start $coinname/
+s/Cleared the caching of the skycoin wallet/Cleared the caching of the $coinname wallet/
 
 # download-peerlist=false
 s/-download-peerlist=true/-download-peerlist=false/
 
 # change menu
 s/About Skycoin/About $Coinname/
+
+# Note this should be the last one!
 s/"Skycoin"/"$Coinname"/
 
 `
+
+func eletronMainJs(fn string, c CoinConfigT) {
+	cText := electronMainSed
+	cText = injectValues(cText, c)
+	write2File(fn, cText)
+}
