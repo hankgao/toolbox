@@ -19,8 +19,8 @@ s/1426562704/$GenesisTimestamp/
 s/100e12/$GenesisCoinVolume/
 
 # change default peers 
-s/"118.178.135.93:6000"/"$node001:port"/
-s/"47.88.33.156:6000"/"$node002:port"/
+s/"118.178.135.93:6000"/"$nodewithport001"/
+s/"47.88.33.156:6000"/"$nodewithport002"/
 
 # delete extra default peers, only leaving two 
 /"121.41.103.148/d
@@ -51,7 +51,7 @@ s#\.skycoin#\.$coinname#
 # change distribution address
 
 #=> change GenesisUxid
-s/043836eb6f29aaeb8b9bfce847e07c159c72b25ae17d291f32125e7f1912e2a0/$GenesisUxid/
+# s/043836eb6f29aaeb8b9bfce847e07c159c72b25ae17d291f32125e7f1912e2a0/$GenesisUxid/
 `
 
 func skycoinSed(fn string, c CoinConfigT) {
