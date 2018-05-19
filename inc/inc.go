@@ -94,8 +94,8 @@ func main() {
 	fmt.Println("Creating skycoin.go.sed")
 	skycoinSed(filepath.Join(outputFolder, "skycoin.go.sed"), c)
 
-	fmt.Println("Creating electron.main.js.sed")
-	eletronMainJs(filepath.Join(outputFolder, "electron.main.js.sed"), c)
+	fmt.Println("Creating electron-main.js.sed")
+	eletronMainJs(filepath.Join(outputFolder, "electron-main.js.sed"), c)
 }
 
 func fillupCoinConfig(c *CoinConfigT) {
