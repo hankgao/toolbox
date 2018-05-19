@@ -88,8 +88,8 @@ func main() {
 	fmt.Println("Generating configurations ...")
 	fillupCoinConfig(&c)
 
-	fmt.Println("Creating configuration.md ...")
-	configurationFile(filepath.Join(outputFolder, "configuration.md"), c)
+	fmt.Println("Creating configurations.md ...")
+	configurationFile(filepath.Join(outputFolder, "configurations.md"), c)
 
 	fmt.Println("Creating skycoin.go.sed")
 	skycoinSed(filepath.Join(outputFolder, "skycoin.go.sed"), c)
