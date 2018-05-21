@@ -153,7 +153,7 @@ func injectValues(text string, c CoinConfigT) string {
 	for i := 0; i < 2; i++ {
 		text = strings.Replace(text, fmt.Sprintf("$node%03d", i+1), c.Nodes[i], -1)
 		oldText := fmt.Sprintf("$nodewithport%03d", i+1)
-		newText := fmt.Sprintf("%s:%s", c.Nodes[i], c.WebInterfacePort)
+		newText := fmt.Sprintf("%s:%s", c.Nodes[i], c.Port)
 		text = strings.Replace(text, oldText, newText, -1)
 	}
 
