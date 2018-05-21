@@ -44,7 +44,7 @@ func DistributionTransaction(uxid, seckey string, addrs []string, each uint64) c
 
 	for i := range addrs {
 		addr := cipher.MustDecodeBase58Address(addrs[i])
-		tx.PushOutput(addr, each*1e6, 1)
+		tx.PushOutput(addr, each*1e6, each*1e6)
 	}
 
 	seckeys := make([]cipher.SecKey, 1)
