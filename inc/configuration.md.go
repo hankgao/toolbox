@@ -41,7 +41,7 @@ scp -P 28001 $coinname-0.23.0-bin-linux-x64.tar.gz root@$node004:/root
 
 # Start master node
 
-./$coinname -master=true -master-secret-key=$BlockchainSeckeyStr  -launch-browser=false –download-peerlist=false
+./$coinname -master=true -master-secret-key=$BlockchainSeckeyStr  -launch-browser=false -download-peerlist=false
 
 # Start normal node
 
