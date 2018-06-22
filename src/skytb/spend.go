@@ -6,29 +6,21 @@ import (
 
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/coin"
-	bip39 "github.com/tyler-smith/go-bip39"
 )
 
-// GenerateSeed generates a seed (12 random words)
-func GenerateSeed() string {
-	entropy, err := bip39.NewEntropy(128)
-	if err != nil {
-		panic(err)
-	}
-
-	seed, err := bip39.NewMnemonic(entropy)
-	if err != nil {
-		panic(err)
-	}
-
-	return seed
+// SpendFromUx spends coins from a specified ux, allowing multiple destinations
+func SpendFromUx(uxid string, dst []Balance) error {
+	return nil
 }
 
-// GetFirstAddress returns the first address created from a seed
-func GetFirstAddress(seed string) (string, string) {
-	publicK, privateK := cipher.GenerateDeterministicKeyPair([]byte(seed))
-	return cipher.AddressFromPubKey(publicK).String(), privateK.Hex()
+// SpendFromAddress spends coins from a specified address
+func SpendFromAddress(addr string, dst []Balance) error {
+	return nil
+}
 
+// SpendFromWallet spends coins from a specified wallet
+func SpendFromWallet(wlt string, dst []Balance) error {
+	return nil
 }
 
 // DistributionTransaction returns a transaction in which the coins in a utxo is distributed to specified addresses
