@@ -4,6 +4,8 @@
 //   snapshot <coin name> <max block heigth>
 // Example:
 //   snapshot shellcoin 100
+//
+// Note that you need to run a wallet or a node to ensure this gadget works
 package main
 
 import (

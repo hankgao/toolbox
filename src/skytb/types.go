@@ -28,4 +28,13 @@ func init() {
 		WebInterfacePort: 7420,
 		RPCInterfacePort: 7430,
 	}
+
+	CoinTypesSupported["shellcoin"] = CoinType{
+		CoinName:         "shellcoin",
+		CoinSymbol:       "SC2",
+		Port:             7100,
+		WebInterfacePort: 7520,
+		RPCInterfacePort: 7530,
+	}
+
 }
