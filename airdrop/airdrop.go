@@ -21,7 +21,7 @@ type CsrfValue struct {
 const (
 	maximumSeq       = 3954
 	webInterfacePort = 8421
-	urlWalletCreate  = "http://127.0.0.1:8421/wallet/create"
+	urlWalletCreate  = "http://127.0.0.1:8421/wallet/create" // TODO: make port configurable
 	urlCsrf          = "http://127.0.0.1:8421/csrf"
 	urlWalletBalance = "http://127.0.0.1:8421/wallet/balance"
 	urlSpend         = "http://127.0.0.1:8421/wallet/spend"

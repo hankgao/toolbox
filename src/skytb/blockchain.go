@@ -1,4 +1,4 @@
-package main
+package skytb
 
 import (
 	"encoding/json"
@@ -10,6 +10,23 @@ import (
 	"github.com/skycoin/skycoin/src/visor"
 )
 
+// contians code that analyze a blockchain
+
+// Snapshot prints snapshot of a blockchain to stdout, in CSV format
+func Snapshot(coinName string, maximumSeq int) {
+	uxpool := GetUxPool(coinName, maximumSeq)
+	book := aggregateAddresses(uxpool)
+	writeBook(book)
+}
+
+// writeBook prints book to stdout in CSV format, which can be redirected to any file
+func writeBook(book map[string]float64) {
+	for addr, coins := range book {
+		fmt.Printf("%s,%f\n", addr, coins)
+	}
+}
+
+// aggregateAddresses combine all transaction outputs by addresses
 func aggregateAddresses(uxpool map[string]visor.ReadableTransactionOutput) map[string]float64 {
 	addressBook := make(map[string]float64)
 
@@ -26,11 +43,12 @@ func aggregateAddresses(uxpool map[string]visor.ReadableTransactionOutput) map[s
 	return addressBook
 }
 
-func getUxPool() map[string]visor.ReadableTransactionOutput {
+// GetUxPool create UNSPENT transaction output pool
+func GetUxPool(coinName string, maximumSeq int) map[string]visor.ReadableTransactionOutput {
 	uxpool := make(map[string]visor.ReadableTransactionOutput)
 
 	for i := 1; i <= maximumSeq; i++ {
-		block := getBlock(i)
+		block := getBlock(coinName, i)
 
 		for _, t := range block.Body.Transactions {
 			// remove input
@@ -48,9 +66,10 @@ func getUxPool() map[string]visor.ReadableTransactionOutput {
 	return uxpool
 }
 
-func getBlock(which int) visor.ReadableBlock {
+// getBlock returns block at heigth of which
+func getBlock(coinName string, which int) visor.ReadableBlock {
 
-	resp, err := http.Get(fmt.Sprintf("http://localhost:%d/block?seq=%d", webInterfacePort, which))
+	resp, err := http.Get(fmt.Sprintf("http://localhost:%d/block?seq=%d", CoinTypesSupported[coinName].WebInterfacePort, which))
 	if err != nil {
 		panic(err)
 	}
