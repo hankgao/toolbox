@@ -1,13 +1,8 @@
 # Overview
 
-bp - blockchain parser
-bp analyzes blockchain database and retrieve information required
+airdrop reads a book in CSV format that contains all addresses with balance, then transfer same amout of new type of coins to these addresses. 
 
-## Steps
-
-> Talk to node, rather than write own code.
-
-- Get block from 1 to blockchain head
-- Parse each block to get address
-- 
-
+airdrop accepts three parameters 
+- book
+- cointype 
+- wallet name

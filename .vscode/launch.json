@@ -16,8 +16,8 @@
             "program": "${fileDirname}",
             "env": {},
             "args": [
-                "mzcoin",
-                100
+                "metalcoin",
+                "metalcoin.seeds.csv"
             ],
             "showLog": true
         }
