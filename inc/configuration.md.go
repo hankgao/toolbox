@@ -42,7 +42,7 @@ scp -P $sshportNode004 $coinname-0.23.0-bin-linux-x64.tar.gz root@$node004:/root
 
 # Start normal node
 
-./$coinname -launch-browser=false
+./$coinname -launch-browser=false -download-peerlist=false
 
 # Distribution addresses
 

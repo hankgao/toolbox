@@ -16,8 +16,8 @@
             "program": "${fileDirname}",
             "env": {},
             "args": [
-                "metalcoin",
-                "metalcoin.seeds.csv"
+                "metalicoin.1414.under1million.csv",
+                "metalcoin"
             ],
             "showLog": true
         }

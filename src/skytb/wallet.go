@@ -6,6 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
+	"os/user"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -20,6 +23,10 @@ func getWalletBalance(wn, ct string) (uint64, uint64) {
 		panic(err)
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		panic(resp.Status)
+	}
 
 	r := bufio.NewReader(resp.Body)
 
@@ -84,11 +91,20 @@ func CreateWallet(cn, label, seed string) string {
 }
 
 // CreateDistributionWallets creates 100 wallets from the initial distribution seeds
+// walllet files have to be renamed into format like this: distribiton001.wlt
 func CreateDistributionWallets(cn string, seeds []string) []string {
+
+	user, _ := user.Current()
 	wallets := make([]string, 100)
 
 	for i := 0; i < 100; i++ {
-		wallets[i] = CreateWallet(cn, fmt.Sprintf("distribution%03d", i), seeds[i])
+		wlt := CreateWallet(cn, fmt.Sprintf("distribution%03d", i), seeds[i])
+		f := filepath.Join(user.HomeDir, fmt.Sprintf("/.%s/wallets/%s", cn, wlt))
+		t := filepath.Join(user.HomeDir, fmt.Sprintf("/.%s/wallets/distribution%03d.wlt", cn, i))
+		err := os.Rename(f, t)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	return wallets
@@ -114,6 +130,8 @@ func fileName(js string) string {
 			break
 		}
 	}
+
+	fn = fn[0 : len(fn)-1]
 
 	return fn
 }

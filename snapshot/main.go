@@ -5,7 +5,7 @@
 // Example:
 //   snapshot shellcoin 100
 //
-// Note that you need to run a wallet or a node to ensure this gadget works
+// Note that you need to run a wallet or a node to allow this gadget works
 package main
 
 import (

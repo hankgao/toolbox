@@ -1,15 +1,15 @@
 
 # Overview
+
 Toolbox contanins tools developed by myself that are used to facilate certain operations against Skyledger based blockchains.
 
-
-# Completed 
+# Completed
 
 ## gppp - Generate public private key pair
 
 ## gsfa - Generate seeds with the first addresses created from them
 
-# Work in progress 
+# Work in progress
 
 ## lnodes - list all nodes of a certain Skyledger based cryptocurrency
 
@@ -17,19 +17,12 @@ Toolbox contanins tools developed by myself that are used to facilate certain op
 
 # To do
 
-## slogger - Smart logger 
-Smart logger allows more flexbilies when logging 
-- only output logs from a given goroutine 
-- only output a module 
+## slogger - Smart logger
+
+Smart logger allows more flexbilies when logging
+
+- only output logs from a given goroutine
+- only output a module
 - close a module's log
-- close a goroutine's log 
-- allow remote log monitoring 
-
-
-
-
-
-
-
-
-
+- close a goroutine's log
+- allow remote log monitoring

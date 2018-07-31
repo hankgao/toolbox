@@ -41,7 +41,7 @@ func readBook(fn string) ([]skytb.AddrItem, int) {
 
 		a := strings.Split(line, ",")
 
-		bs := skytb.RemoveGarbage(a[2])
+		bs := skytb.RemoveGarbage(a[1])
 
 		balancef, _ := strconv.ParseFloat(bs, 64)
 		balance := uint64(balancef * 1e6)
@@ -56,7 +56,7 @@ func readBook(fn string) ([]skytb.AddrItem, int) {
 		}
 
 		book[count] = skytb.AddrItem{
-			Addr:    a[1],
+			Addr:    a[0],
 			Balance: balance,
 		}
 
@@ -74,7 +74,7 @@ func readBook(fn string) ([]skytb.AddrItem, int) {
 
 func main() {
 
-	if len(os.Args) < 4 {
+	if len(os.Args) < 3 {
 		fmt.Printf(`
 			Usage: 
 				airdrop <metalicoin.1414.csv> <metalcoin>

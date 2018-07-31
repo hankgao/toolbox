@@ -1,6 +1,10 @@
 // cw100 creates 100 wallets from 100 seeds
 // usage:
 //   cw100 <seeds_file_name>
+// seed file has to be in the following format:
+// give nurse mechanic lock swamp guard blue young bike tennis reject orchard
+// cruel diesel broccoli fault argue broom cabin veteran pact local pet absurd
+
 package main
 
 import (
@@ -49,7 +53,7 @@ func read100Seeds(fn string) []string {
 			break
 		}
 
-		seeds[index] = seed[0 : len(seed)-1]
+		seeds[index] = seed[0 : len(seed)-1] // remove the trailing carraige
 	}
 
 	return seeds
