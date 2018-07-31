@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -39,6 +40,7 @@ type CoinConfigT struct {
 }
 
 func main() {
+
 	c := CoinConfigT{}
 
 	r := bufio.NewReader(os.Stdin)
@@ -51,9 +53,10 @@ func main() {
 	c.CoinSymbol, _ = r.ReadString('\n')
 	c.CoinSymbol = strings.TrimSuffix(c.CoinSymbol, "\n")
 
-	fmt.Print("Genesis coin volume : ")
+	fmt.Print("Genesis coin volume (in droplets) : ")
 	c.GenesisCoinVolume, _ = r.ReadString('\n')
 	c.GenesisCoinVolume = strings.TrimSuffix(c.GenesisCoinVolume, "\n")
+	c.GenesisCoinVolume = convertSn(c.GenesisCoinVolume)
 
 	fmt.Print("Port: ")
 	c.Port, _ = r.ReadString('\n')
@@ -170,4 +173,21 @@ func write2File(fn, text string) {
 	defer f.Close()
 
 	f.WriteString(text + "\n")
+}
+
+// convertSn converts scientific notation to normal
+func convertSn(sn string) string {
+	a := strings.Split(sn, "e")
+	if len(a) == 2 {
+		firstPart := a[0]
+		zeros, err := strconv.Atoi(a[1])
+		if err != nil {
+			return sn
+		}
+
+		return firstPart + strings.Repeat("0", zeros)
+	}
+
+	return sn
+
 }
