@@ -63,9 +63,10 @@ func main() {
 	c.WebInterfacePort, _ = r.ReadString('\n')
 	c.WebInterfacePort = strings.TrimSuffix(c.WebInterfacePort, "\n")
 
-	fmt.Print("RPC interface port: ")
-	c.RPCInterfacePort, _ = r.ReadString('\n')
-	c.RPCInterfacePort = strings.TrimSuffix(c.RPCInterfacePort, "\n")
+	// fmt.Print("RPC interface port: ")
+	// c.RPCInterfacePort, _ = r.ReadString('\n')
+	// c.RPCInterfacePort = strings.TrimSuffix(c.RPCInterfacePort, "\n")
+	c.RPCInterfacePort = "XXXX"
 
 	fmt.Print("Node 1 IP: ")
 	c.Nodes[0], _ = r.ReadString('\n')

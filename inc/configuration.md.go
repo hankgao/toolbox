@@ -22,7 +22,7 @@ const configurationMdTemplate = `
 |            PeerListURL| $PeerListURL
 |                   Port| $Port
 |       WebInterfacePort| $WebInterfacePort
-|       RPCInterfacePort| $RPCInterfacePort
+|       RPCInterfacePort| $RPCInterfacePort Not used anymore from v0.24.0
 |            GenesisUxID| $GenesisUxID
 |                 Node 1| $node001
 |                 Node 2| $node002
@@ -31,10 +31,10 @@ const configurationMdTemplate = `
 
 # Deploy nodes
 
-scp -P $sshportNode001 $coinname-0.23.0-bin-linux-x64.tar.gz root@$node001:/root
-scp -P $sshportNode002 $coinname-0.23.0-bin-linux-x64.tar.gz root@$node002:/root
-scp -P $sshportNode003 $coinname-0.23.0-bin-linux-x64.tar.gz root@$node003:/root
-scp -P $sshportNode004 $coinname-0.23.0-bin-linux-x64.tar.gz root@$node004:/root
+scp -P XXXX $coinname-0.23.0-bin-linux-x64.tar.gz root@$node001:/root
+scp -P XXXX $coinname-0.23.0-bin-linux-x64.tar.gz root@$node002:/root
+scp -P XXXX $coinname-0.23.0-bin-linux-x64.tar.gz root@$node003:/root
+scp -P XXXX $coinname-0.23.0-bin-linux-x64.tar.gz root@$node004:/root
 
 # Start master node
 
