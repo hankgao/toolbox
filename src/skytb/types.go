@@ -61,6 +61,13 @@ func init() {
 		RPCInterfacePort: 7260,
 	}
 
+	CoinTypesSupported["angelcoin"] = CoinType{
+		CoinName:         "angelcoin",
+		CoinSymbol:       "AGLC",
+		Port:             7480,
+		WebInterfacePort: 7490,
+		RPCInterfacePort: 0,
+	}
 }
 
 // IsCoinTypeSupported check whether a coin type is supported

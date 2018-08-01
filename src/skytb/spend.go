@@ -1,6 +1,7 @@
 package skytb
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -143,70 +144,86 @@ func DistCoinsNamedWallets(cn string, targets []AddrItem, count int) {
 	}
 }
 
-// func distributeCoins(wlt, change string, targets []addrItem, qty int) error {
+// DistCoins2OneHundred distributes coins in the genesis block to 100 addresses in addrs
+// cn - coin name
+// wn - wallet name
+func DistCoins2OneHundred(addrs []string, cn, wn string, slice float64) error {
+	_, ok := CoinTypesSupported[cn]
+	if !ok {
+		return fmt.Errorf("%s is not supported", cn)
+	}
 
-// 	jsonBody := `
-// 	{
-// 		"hours_selection": {
-// 			"type": "auto",
-// 			"mode": "share",
-// 			"share_factor": "0.5"
-// 		},
-// 		"wallet": {
-// 			"id": "walletName"
-// 		},
-// 		"change_address": "changeAddress",
-// 		"to": [
-// 		`
+	body := `
+	{
+		"hours_selection": {
+			"type": "auto",
+			"mode": "share",
+			"share_factor": "0.5"
+		},
+		"wallet": {
+			"id": "foo.wlt",
+			"unspents": ["275f555f7aef20ff30718708f802e30ef36f338d3a0a85d1f61007c6c643a2b3"]
+		},
+		"to": [
+	`
+	a2r := struct {
+		Address string `json:"address"`
+		Coins   string `json:"coins"`
+	}{}
 
-// 	// "to": [
-// 	// 	{
-// 	// 		"address": "targetAddress",
-// 	// 		"coins": "targetCoins",
-// 	// 	}
-// 	// 	]
+	for i := 0; i < 100; i++ {
+		a2r.Address = addrs[i]
+		a2r.Coins = strconv.FormatFloat(slice, 'f', 3, 64)
 
-// 	jsonBody = strings.Replace(jsonBody, "walletName", wlt, 1)
-// 	jsonBody = strings.Replace(jsonBody, "changeAddress", change, 1)
+		ma2r, err := json.MarshalIndent(a2r, "", "  ")
+		if err != nil {
+			panic(err)
+		}
 
-// 	to := ""
-// 	for i := 0; i < qty; i++ {
-// 		to += fmt.Sprintf("{\n\"address\":%s\n", targets[i].addr)
-// 		to += fmt.Sprintf("\"address\":%d\n}", uint64(targets[i].balance*1e6))
+		body = body + string(ma2r)
+		if i < 99 {
+			body = body + ",\n"
+		}
+	}
 
-// 		if i < qty-1 {
-// 			to += ","
-// 		}
+	body = body + "]}"
 
-// 		to += "\n"
-// 	}
+	body = strings.Replace(body, "foo.wlt", wn, -1)
 
-// 	to += "]\n}"
+	fmt.Println(body)
 
-// 	fmt.Println(jsonBody)
+	// ctd := CoinTypeDetails(cn)
+	// req, err := http.NewRequest("POST", fmt.Sprintf("http://127.0.0.1:%d/api/v1/wallet/transaction", ctd.WebInterfacePort), strings.NewReader(body))
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://127.0.0.1:49827/api/v1/wallet/transaction"), strings.NewReader(body))
 
-// 	req, err := http.NewRequest("POST", urlWalletCreate, strings.NewReader(jsonBody))
+	if err != nil {
+		panic(err)
+	}
 
-// 	if err != nil {
-// 		panic(err)
-// 	}
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("X-CSRF-Token", getCsrfToken(cn))
 
-// 	req.Header.Add("Content-Type", "application/application/json")
-// 	req.Header.Add("X-CSRF-Token", getCsrfToken())
+	c := &http.Client{}
+	resp, err := c.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
 
-// 	c := &http.Client{}
-// 	resp, err := c.Do(req)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		panic(resp.Status)
+	}
 
-// 	data, err := ioutil.ReadAll(resp.Body)
-// 	if err != nil {
-// 		panic(err)
-// 	}
+	// data, err := ioutil.ReadAll(resp.Body)
 
-// 	fmt.Printf("%s\n", string(data))
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-// 	return nil
-// }
+	// // parse result
+	// var f interface{}
+	// err = json.Unmarshal(data, &f)
+	// m := f.(map[string]interface{})
+
+	return nil
+}

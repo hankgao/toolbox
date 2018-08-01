@@ -15,7 +15,7 @@ type CsrfValue struct {
 func getCsrfToken(coinName string) string {
 	csrf := CsrfValue{}
 	ctd := CoinTypeDetails(coinName)
-	resp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%4d/csrf", ctd.WebInterfacePort))
+	resp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%4d/api/v1/csrf", ctd.WebInterfacePort))
 	if err != nil {
 		panic(err)
 	}
