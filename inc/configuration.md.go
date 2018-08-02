@@ -31,10 +31,10 @@ const configurationMdTemplate = `
 
 # Deploy nodes
 
-scp -P XXXX $coinname-0.24.0-bin-linux-x64.tar.gz root@$node001:/root
-scp -P XXXX $coinname-0.24.0-bin-linux-x64.tar.gz root@$node002:/root
-scp -P XXXX $coinname-0.24.0-bin-linux-x64.tar.gz root@$node003:/root
-scp -P XXXX $coinname-0.24.0-bin-linux-x64.tar.gz root@$node004:/root
+scp -P XXXX $coinname-0.24.1-bin-linux-x64.tar.gz root@$node001:/root
+scp -P XXXX $coinname-0.24.1-bin-linux-x64.tar.gz root@$node002:/root
+scp -P XXXX $coinname-0.24.1-bin-linux-x64.tar.gz root@$node003:/root
+scp -P XXXX $coinname-0.24.1-bin-linux-x64.tar.gz root@$node004:/root
 
 # Start master node
 
