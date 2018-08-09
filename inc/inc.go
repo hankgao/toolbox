@@ -1,10 +1,16 @@
 // inc - Issue New Cryptocurrency
+// Usage:
+// inc <coin name>
+// coin name is an optional parameter, when provided, the program will assume that the configuration.md file
+// has been created, which will be parsed to create skycoin.go.sed and electron-main.js.sed
+// In most cases, this is to upgrade to the newer version
 
 package main
 
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -40,7 +46,21 @@ type CoinConfigT struct {
 }
 
 func main() {
+	c := CoinConfigT{}
+	if len(os.Args) > 1 {
+		c = loadConfiguration(os.Args[1])
+	} else {
+		c = createConfiguration()
+	}
 
+	fmt.Println("Creating skycoin.go.sed")
+	skycoinSed(filepath.Join("newcoins", strings.ToLower(c.CoinName), "skycoin.go.sed"), c)
+
+	fmt.Println("Creating electron-main.js.sed")
+	eletronMainJs(filepath.Join("newcoins", strings.ToLower(c.CoinName), "electron-main.js.sed"), c)
+}
+
+func createConfiguration() CoinConfigT {
 	c := CoinConfigT{}
 
 	r := bufio.NewReader(os.Stdin)
@@ -95,11 +115,7 @@ func main() {
 	fmt.Println("Creating configurations.md ...")
 	configurationFile(filepath.Join(outputFolder, "configurations.md"), c)
 
-	fmt.Println("Creating skycoin.go.sed")
-	skycoinSed(filepath.Join(outputFolder, "skycoin.go.sed"), c)
-
-	fmt.Println("Creating electron-main.js.sed")
-	eletronMainJs(filepath.Join(outputFolder, "electron-main.js.sed"), c)
+	return c
 }
 
 func fillupCoinConfig(c *CoinConfigT) {
@@ -190,4 +206,56 @@ func convertSn(sn string) string {
 
 	return sn
 
+}
+
+// loadConfiguration
+func loadConfiguration(cn string) CoinConfigT {
+	config := CoinConfigT{}
+
+	fn := filepath.Join("newcoins/", cn, "/configurations.md")
+	bytes, err := ioutil.ReadFile(fn)
+	if err != nil {
+		panic(err)
+	}
+
+	kvMap := make(map[string]string)
+
+	scanner := bufio.NewScanner(strings.NewReader(string(bytes)))
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if len(line) > 0 && line[0] == '|' {
+			tokens := strings.Split(line[1:], "|")
+			if len(tokens) >= 2 {
+				key := strings.TrimSpace(tokens[0])
+
+				if key == "" || key == "Item" || key[0] == '-' {
+					continue
+				}
+
+				value := strings.TrimSpace(tokens[1])
+
+				kvMap[key] = value
+			}
+		}
+	}
+
+	config.BlockchainPubkeyStr = kvMap["BlockchainPubkeyStr"]
+	config.BlockchainSeckeyStr = kvMap["BlockchainSeckeyStr"]
+	config.CoinName = kvMap["Coin name"]
+	config.CoinSymbol = kvMap["Coin symbol"]
+	config.gasPrivateKey = kvMap["PrivateKey"]
+	config.GenesisAddressStr = kvMap["GenesisAddressStr"]
+	config.GenesisCoinVolume = kvMap["GenesisCoinVolume"]
+	config.GenesisSignatureStr = kvMap["GenesisSignatureStr"]
+
+	config.GenesisTimestamp, err = strconv.ParseInt(kvMap["GenesisTimestamp"], 10, 64)
+	config.GenesisUxID = kvMap["GenesisUxID"]
+	config.Nodes[0] = kvMap["Node 1"]
+	config.Nodes[1] = kvMap["Node 2"]
+	config.Port = kvMap["Port"]
+	config.RPCInterfacePort = kvMap["RPCInterfacePort"]
+	config.WebInterfacePort = kvMap["WebInterfacePort"]
+
+	return config
 }
