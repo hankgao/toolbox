@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/skycoin/skycoin/src/api"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/coin"
 )
@@ -224,6 +225,158 @@ func DistCoins2OneHundred(addrs []string, cn, wn string, slice float64) error {
 	// var f interface{}
 	// err = json.Unmarshal(data, &f)
 	// m := f.(map[string]interface{})
+
+	return nil
+}
+
+// DistributeCoins distributes coins to addresses specified in targets
+// func DistributeCoins(cn, wn string, targets []AddrItem) error {
+
+// 	_, ok := CoinTypesSupported[cn]
+// 	if !ok {
+// 		return fmt.Errorf("%s is not supported", cn)
+// 	}
+
+// 	// TODO: need to give port
+// 	client := api.NewClient("127.0.0.1")
+
+// 	// constrcut transaction request
+// 	req := api.CreateTransactionRequest{
+// 		HoursSelection: api.HoursSelection{
+// 			Type:        "auto",
+// 			Mode:        "share",
+// 			ShareFactor: "0.1",
+// 		},
+// 		ChangeAddress:     nil,
+// 		IgnoreUnconfirmed: false,
+// 		Wallet: api.CreateTransactionRequestWallet{
+// 			ID: wn,
+// 		},
+// 	}
+
+// 	var r api.Receiver
+// 	for i := 0; i < len(targets) {
+// 		r.Address = targets[i].Addr
+// 		r.Coins =
+// 		r := api.Receiver {
+// 			Address: targets[i].Addr,
+// 			Coins: targets[i].Balance,
+// 		}
+// 	}
+
+// 	body := `
+// {
+// 	"hours_selection": {
+// 		"type": "auto",
+// 		"mode": "share",
+// 		"share_factor": "0.1"
+// 	},
+// 	"wallet": {
+// 		"id": "foo.wlt"
+// 	},
+// 	"to": [
+// `
+// 	a2r := struct {
+// 		Address string `json:"address"`
+// 		Coins   string `json:"coins"`
+// 	}{}
+
+// 	totalCoins := float64(0.00)
+
+// 	// TODO:
+// 	// - check whether you have enough coins
+// 	// - check if number of targets is bigger than 100
+// 	for i := 0; i < len(targets); i++ {
+// 		a2r.Address = targets[i].Addr
+// 		a2r.Coins = strconv.FormatFloat(float64(targets[i].Balance), 'f', 3, 64)
+
+// 		totalCoins += float64(targets[i].Balance)
+
+// 		ma2r, err := json.MarshalIndent(a2r, "", "  ")
+// 		if err != nil {
+// 			panic(err)
+// 		}
+
+// 		body = body + string(ma2r)
+// 		if i < len(targets)-1 {
+// 			body = body + ",\n"
+// 		}
+// 	}
+
+// 	body = body + "]}"
+
+// 	body = strings.Replace(body, "foo.wlt", wn, -1)
+
+// 	fmt.Println("Spending body for checking")
+// 	fmt.Println(body)
+
+// 	ctd := CoinTypeDetails(cn)
+// 	req, err := http.NewRequest("POST", fmt.Sprintf("http://127.0.0.1:%d/api/v1/wallet/transaction", ctd.WebInterfacePort), strings.NewReader(body))
+
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	req.Header.Add("Content-Type", "application/json")
+// 	req.Header.Add("X-CSRF-Token", getCsrfToken(cn))
+
+// 	c := &http.Client{}
+// 	resp, err := c.Do(req)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	defer resp.Body.Close()
+
+// 	resp.Body.Read()
+
+// 	if resp.StatusCode != 200 {
+// 		panic(resp.Status)
+// 	} else {
+// 		//
+// 	}
+
+// 	return nil
+// }
+
+// DistributeCoins distributes coins to addresses specified in targets
+func DistributeCoins(cn, wn string, targets []api.Receiver) error {
+
+	_, ok := CoinTypesSupported[cn]
+	if !ok {
+		return fmt.Errorf("%s is not supported", cn)
+	}
+
+	// TODO: need to give port
+	ctd := CoinTypeDetails(cn)
+	addr := fmt.Sprintf("http://127.0.0.1:%d", ctd.WebInterfacePort)
+	client := api.NewClient(addr)
+
+	// constrcut transaction request
+	req := api.CreateTransactionRequest{
+		HoursSelection: api.HoursSelection{
+			Type:        "auto",
+			Mode:        "share",
+			ShareFactor: "0.1",
+		},
+		ChangeAddress:     nil,
+		IgnoreUnconfirmed: false,
+		Wallet: api.CreateTransactionRequestWallet{
+			ID: wn,
+		},
+		To: targets,
+	}
+
+	response, err := client.CreateTransaction(req)
+	if err != nil {
+		panic(err)
+	}
+
+	itr, err := client.InjectTransaction(response.EncodedTransaction)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(itr)
 
 	return nil
 }

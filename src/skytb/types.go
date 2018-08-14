@@ -68,6 +68,23 @@ func init() {
 		WebInterfacePort: 7490,
 		RPCInterfacePort: 0,
 	}
+
+	CoinTypesSupported["pigcoin"] = CoinType{
+		CoinName:         "pigcoin",
+		CoinSymbol:       "PGC",
+		Port:             7270,
+		WebInterfacePort: 7290,
+		RPCInterfacePort: 0,
+	}
+
+	CoinTypesSupported["yongbangcoin"] = CoinType{
+		CoinName:         "yongbangcoin",
+		CoinSymbol:       "YBC",
+		Port:             7040,
+		WebInterfacePort: 7050,
+		RPCInterfacePort: 0,
+	}
+
 }
 
 // IsCoinTypeSupported check whether a coin type is supported
