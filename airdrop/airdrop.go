@@ -15,14 +15,16 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/hankgao/toolbox/src/skytb"
+	"github.com/skycoin/skycoin/src/api"
 )
 
-func readBook(fn string) ([]skytb.AddrItem, int) {
-	book := make([]skytb.AddrItem, 2000)
+func readBook(fn string) ([]api.Receiver, int) {
+
+	book := []api.Receiver{}
+
 	f, err := os.Open(fn)
 	defer f.Close()
 
@@ -39,31 +41,20 @@ func readBook(fn string) ([]skytb.AddrItem, int) {
 			break
 		}
 
+		line = strings.TrimSuffix(line, "\r\n")
+
 		a := strings.Split(line, ",")
-
-		bs := skytb.RemoveGarbage(a[1])
-
-		balancef, _ := strconv.ParseFloat(bs, 64)
-		balance := uint64(balancef * 1e6)
-
-		// last three digits have to be 000!
-		if balance%1000 > 0 {
-			balance = balance/1000*1000 + 1000
-		}
+		addr := a[0]
+		coins := a[1]
 
 		if err != nil {
 			panic(err)
 		}
 
-		book[count] = skytb.AddrItem{
-			Addr:    a[0],
-			Balance: balance,
-		}
-
-		// if strings.Contains(book[count].addr, "4K") {
-		// 	fmt.Printf("%s=>%d\n", book[count].addr, book[count].balance)
-
-		// }
+		book = append(book, api.Receiver{
+			Address: addr,
+			Coins:   coins,
+		})
 
 		count++
 
@@ -81,10 +72,7 @@ func main() {
 				`)
 		return
 	}
-	book := os.Args[1]
-	coinName := os.Args[2]
 
-	accouts, count := readBook(book)
-	skytb.DistCoinsNamedWallets(coinName, accouts, count)
-
+	targets, _ := readBook(os.Args[2] /* book */)
+	skytb.DistributeCoins(os.Args[1] /* coin name */, "airdrop.wlt", targets)
 }
